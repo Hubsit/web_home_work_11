@@ -26,6 +26,14 @@ async def create_contact(body: ContactModel, db: Session = Depends(get_db)):
     return contact
 
 
+@router.get('/birthday', response_model=List[ContactResponse])
+async def search_contact_7_days_birthday(db: Session = Depends(get_db)):
+    contacts = await repository_contacts.get_birthday(db)
+    if len(contacts) < 1:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found')
+    return contacts
+
+
 @router.get('/{contact_id}', response_model=ContactResponse)
 async def get_contact(contact_id: int = Path(ge=1), db: Session = Depends(get_db)):
     contact = await repository_contacts.get_contact_by_id(contact_id, db)
@@ -50,7 +58,7 @@ async def remove_contact(contact_id: int = Path(ge=1), db: Session = Depends(get
     return contact
 
 
-@router.get('/contacts/search/{contact_email}', response_model=ContactResponse)
+@router.get('/search/{contact_email}', response_model=ContactResponse)
 async def search_contact_by_email(contact_email: str, db: Session = Depends(get_db)):
     contact = await repository_contacts.get_contact_by_email(contact_email, db)
     if contact is None:
@@ -58,9 +66,20 @@ async def search_contact_by_email(contact_email: str, db: Session = Depends(get_
     return contact
 
 
-@router.get('/contacts/search/{contact_first_name}', response_model=List[ContactResponse])
+@router.get('/search/first_name/{contact_first_name}', response_model=List[ContactResponse])
 async def search_contact_by_first_name(contact_first_name: str, db: Session = Depends(get_db)):
-    contacts = await repository_contacts.get_contact_by_email(contact_first_name, db)
-    if contacts is None:
+    contacts = await repository_contacts.get_contact_by_first_name(contact_first_name, db)
+    if len(contacts) < 1:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found')
     return contacts
+
+
+@router.get('/search/last_name/{contact_last_name}', response_model=List[ContactResponse])
+async def search_contact_by_first_name(contact_last_name: str, db: Session = Depends(get_db)):
+    contacts = await repository_contacts.get_contact_by_last_name(contact_last_name, db)
+    if len(contacts) < 1:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Not Found')
+    return contacts
+
+
+

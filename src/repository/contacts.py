@@ -1,3 +1,6 @@
+from datetime import date, timedelta
+
+from sqlalchemy import extract, and_
 from sqlalchemy.orm import Session
 
 from src.database.models import Contact
@@ -49,4 +52,18 @@ async def remove(contact_id: int, db: Session):
 
 async def get_contact_by_first_name(contact_first_name: str, db: Session):
     contacts = db.query(Contact).filter_by(first_name=contact_first_name).all()
+    return contacts
+
+
+async def get_contact_by_last_name(contact_last_name: str, db: Session):
+    contacts = db.query(Contact).filter_by(last_name=contact_last_name).all()
+    return contacts
+
+
+async def get_birthday(db: Session):
+    today = date.today()
+    next_week = today + timedelta(days=7)
+    contacts = db.query(Contact).filter(and_(extract('day', Contact.birthday) >= today.day,
+                                             extract('day', Contact.birthday) <= next_week.day,
+                                             extract('month', Contact.birthday) == today.month)).all()
     return contacts
